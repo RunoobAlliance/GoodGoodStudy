@@ -1,0 +1,39 @@
+Oracle异常处理——ORA-01502:索引或这类索引的分区处于不可用状态
+参考自：https://www.cnblogs.com/lijiaman/p/9277149.html
+
+1、原因分析
+经过查证，发现是在删除分区的时候，导致分区表上的唯一性全局索引为不可用状态，导致新的数据无法正常插入，从而引发了该错误。
+是不是索引不可用会导致DML操作失败呢？经过验证，发现以下特点：
+（1）对于非唯一性索引，如果索引不可用，是不会影响到到DML操作的；
+（2）对于唯一性索引，如果索引不可用，在进行DML操作时，会触发ORA-01502错误；
+哪些操作会导致索引失效：
+（1）move操作
+alter table tableName move [tablespace tablespaceName];
+（2）用户手动unseable索引
+alter index schema.indexName unusable;
+（3）分区表的删除分区操作
+alter table tableName drop partition partitionName;
+2、解决方法
+创建唯一索引的三种方式：
+（1）直接创建唯一性索引
+ 语法为：CREATE UNIQUE INDEX index_name on table_name(col1，col2,…);
+（2）创建主键约束时自动创建唯一性索引
+语法为：ALTER TABLE table_name ADD CONSTRAINT constraint_name PRIMARY KEY(col1,col2,..);
+（3）创建唯一性约束时自动创建唯一性索引
+语法为：ALTER TABLE table_name ADD CONSTRAINT constraint_name UNIQUE(col1,col2,…);
+解决方法：
+（1）方案一：删除唯一性索引
+与业务方面沟通，确认唯一性索引是否可以删除，如果可以，直接删除索引，删除语法为：
+DROP INDEX schema.index_name;
+对于由主键约束或唯一性约束创建的唯一性索引，不能直接删除，正确的方法是删除相应的约束。
+ALTER TABLE tableName DROP CONSTRAINT constraint_name;
+小结：该方法简单粗暴，前提是在约束或索引在业务方面可以删除的情况下才能使用。
+（2）方案二：重建唯一性索引（针对非分区表）
+语法为：ALTER INDEX [schema.]index_name REBUILD [ONLINE] [TABLESPACE tablespace name]
+小结：该方法可以使索引可用。但对于分区表而言，依然存在问题：在下一次删除分区后，索引状态又会变为不可用。
+（3）方案三：删除不可用的索引，创建唯一性分区索引（针对分区表）
+对于主键约束、唯一性约束，可以使用以下语法添加唯一性局部分区索引：
+ALTER TABLE [schema.]table_name ADD CONSTRAINT constarint [PRIMARY KEY | UNIQUE](col1,col2)
+     USING INDEX LOCAL TABLESPACE tablespace_name;
+小结：该方法可以有效解决分区表因删除分区导致的索引不可用问题。
+ 
