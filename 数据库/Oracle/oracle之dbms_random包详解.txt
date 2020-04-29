@@ -1,0 +1,163 @@
+Oracle之DBMS_RANDOM包详解
+参考自：https://www.cnblogs.com/ivictor/p/4476031.html
+        https://www.cnblogs.com/shengs/p/4592747.html
+
+DBMS_RANDOM是Oracle提供的一个PL/SQL包，用于生成随机数据和字符。它具有以下函数：
+INITIALIZE
+NORMAL
+RANDOM
+SEED
+STRING
+TERMINATE
+VALUE
+其中，initialize,random,terminate函数在Oracle11g中已不推荐使用，主要用于向后兼容。下面对各个函数进行举例说明
+1、INITIALIZE
+用一个种子值来初始化DBMS_RANDOM包。
+默认情况下，DBMS_RANDOM包是根据用户、时间、会话来进行初始化，这样，即便是同一个语句，每次生成的数值都会不一样。
+这样会产生一个问题，在测试环境下，如果我想每次生成的随机序列都是一样的，该怎么办？
+INITIALIZE函数就很好的解决了这一问题，通过设置相同的种子值，则每次生成的随机序列都将是一样的。
+语法：
+DBMS_RANDOM.INITIALIZE (
+         val IN BINARY_INTEGER);
+举例：
+SQL> BEGIN
+  2    dbms_random.initialize(100);
+  3    FOR i IN 1 .. 10 LOOP
+  4       dbms_output.put_line(dbms_random.random); 
+  5    END LOOP;
+  6  END;
+  7  /
+163284779
+751599369
+659804475
+1131809137
+-865013504
+-407075626
+2128226600
+-448154892
+-1371178596
+472933400
+
+PL/SQL procedure successfully completed.
+即便是在不同的会话中，不同的用户下，随机生成的10个值都是一样的。
+2、NORMAL
+NORMAL函数返回服从正态分布的一组数。此正态分布标准偏差为1，期望值为0。这个函数返回的数值中有68%是介于-1与+1之间，95%介于-2与+2之间，99%介于-3与+3之间。
+语法：
+DBMS_RANDOM.NORMAL
+        RETURN NUMBER;
+举例：
+SQL> select dbms_random.normal from dual;
+
+    NORMAL
+----------
+.321082788
+3、RANDOM
+RANDOM返回值的范围为： [-2^31, 2^31)，返回的是整数。
+语法：
+DBMS_RANDOM.RANDOM
+          RETURN binary_integer;
+举例：
+SQL> select dbms_random.random from dual;
+
+    RANDOM
+----------
+-1.363E+09
+4、SEED
+功能和INITIALIZE函数类似，实际上，INITIALIZE函数被淘汰，推荐的替代函数即是SEED函数。与INITIALIZE函数不同的是SEED函数同时支持数值和字符作为种子值，而INITIALIZE函数只支持数值。
+语法：
+DBMS_RANDOM.SEED (
+     val IN BINARY_INTEGER);
+DBMS_RANDOM.SEED (
+     val IN VARCHAR2);
+举例：
+BEGIN
+   dbms_random.seed('hello');
+   FOR i IN 1 .. 10 LOOP
+      dbms_output.put_line(round(dbms_random.value * 100));
+   END LOOP;
+END;
+输出如下：
+58
+71
+33
+4
+39
+53
+93
+37
+20
+5
+其中，VARCHAR2的最大范围为2000.
+5、STRING
+随机生成字符串
+语法：
+DBMS_RANDOM.STRING
+      opt IN CHAR,
+      len IN NUMBER)
+  RETURN VARCHAR2;
+关于opt和len的说明，解释如下：
+取值                        含义
+'u'或'U'            返回一个由大写字母组成的字符串
+'l'或'L'            返回一个由小写字母组成的字符串
+'a'或'A'            返回一个由大写字母和小写字母组成的字符串
+'x'或'X'            返回一个由大写字母和数字组成的字符串
+'p'或'P'            返回一个由任意的可打印字符组成的字符串
+可见，opt指的是字符串的格式，len指的是字符串的长度。
+举例：
+SQL> select dbms_random.string('u',10) value from dual;
+
+VALUE
+--------------------
+MCPEZLEQOO
+
+SQL> select dbms_random.string('l',10) value from dual;
+
+VALUE
+--------------------
+laufaqufln
+
+SQL> select dbms_random.string('a',10) value from dual;
+
+VALUE
+--------------------
+vjEetXlItt
+
+SQL> select dbms_random.string('x',10) value from dual;
+
+VALUE
+--------------------
+LAMDGZE22E
+
+SQL> select dbms_random.string('p',10) value from dual;
+
+VALUE
+--------------------
+4LF =Q'(fP
+6、TERMINATE
+在使用完DBMS_RANDOM包后，用该函数进行终止。该函数在11gR1中即不推荐使用了。
+语法：
+DBMS_RANDOM.TERMINATE;
+举例：
+SQL> exec DBMS_RANDOM.TERMINATE;
+PL/SQL procedure successfully completed.
+7、VALUE
+语法：
+DBMS_RANDOM.VALUE
+   RETURN NUMBER;
+DBMS_RANDOM.VALUE(
+       low IN NUMBER,
+       high IN NUMBER)
+   RETURN NUMBER;
+对于第一种用法，返回的值的范围为大于或等于0，小于1，带有38位精度的小数。
+对于第二种用法，可指定最小值和最大值，返回值的范围为大于或等于low，小于high。
+举例：
+SQL> select dbms_random.value from dual;
+     VALUE
+----------
+.291782963
+
+SQL> select dbms_random.value(10,20) from dual;
+
+DBMS_RANDOM.VALUE(10,20)
+------------------------
+          12.4079412
