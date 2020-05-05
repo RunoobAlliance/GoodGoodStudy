@@ -1,0 +1,55 @@
+Linux实用工具：
+
+远程桌面连接工具：
+1、windows系统连接windows系统
+https://blog.csdn.net/xc_zhou/article/details/80810106
+（1）RDO https://zhuanlan.zhihu.com/p/109177794
+（2）Teamviewer
+（3）IIS7远程桌面管理工具
+（4）PC Anywhere
+（5）AnyDesk
+（6）Chrome Remote Desktop app
+（7）Splashtop
+（8）Logmein
+（9）UltraVNC
+（10）GoToMyPC
+（11）Radmin
+2、windows系统连接linux系统
+https://baijiahao.baidu.com/s?id=1642550036775110946&wfr=spider&for=pc
+
+SSH客户端：https://zhuanlan.zhihu.com/p/61013117
+1、putty
+2、SSH Secure Shell
+3、Moba-Xterm
+4、Xmanager
+5、SecureCRT
+6、DameWare SSH Client
+7、Bitvise SSH Server
+8、SmarTTY
+
+Linux下载工具：https://www.sohu.com/a/248975622_100159565
+1、Xtreme Download Manager (XDM)
+2、uGet
+3、SteadyFlow
+4、FlareGet
+5、Persepolis
+6、MultiGet
+7、DownThemAll
+8、kGet
+
+Linux上传下载工具软件：https://blog.csdn.net/qq_32865713/article/details/98504565
+1、FileZilla
+2、lrzsz
+3、sftp
+
+linux下基于命令行的下载工具：https://www.zhihu.com/question/267301281
+1、wget https://blog.csdn.net/qq_27870421/article/details/91951402
+2、curl https://www.cnblogs.com/duhuo/p/5695256.html https://blog.csdn.net/wangpanbaoding/article/details/79104609
+3、axel
+https://www.cnblogs.com/zippo123/p/11423217.html
+https://ipcmen.com/axel
+4、rtorrent
+5、tget
+6、aria2
+7、xmule
+8、amule
