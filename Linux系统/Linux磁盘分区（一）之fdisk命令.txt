@@ -1,0 +1,59 @@
+Linux磁盘分区（一）之fdisk命令
+https://www.cnblogs.com/machangwei-8/p/10353683.html
+
+一、fdisk 的介绍
+fdsik 能划分磁盘成为若干个区，同时也能为每个分区指定分区的文件系统，比如linux、fat32、linux、linux swap、fat16以及其实类Unix类操作系统的文件系统等；
+当然我们用fdisk对磁盘操作分区时，并不是一个终点，我们还要对分区进行格式化所需要的文件系统；这样一个分区才能使用；这和DOS中的fdisk是类似的；
+笔记：先对一块物理硬盘做一个逻辑分区使用fdisk工具。然后对逻辑分区进行分配相应的文件系统。这样的分区才可以使用的。
+
+二、合理规划您的硬盘分区
+https://www.cnblogs.com/yinheyi/p/7265403.html
+在操作分区之前，我们要明白硬盘分区一点理论，比如硬盘容量和分区大小的计算；对一个硬盘如何规划分区等，请参考如下文档《合理规划您的硬盘分区》------- 深有感触呀！
+通过《合理规划您的硬盘分区》，我们知道主分区（包括扩展分区）的总个数不能超过四个；也不能把扩展分区包围在主分区之间；根据这个原则，我们划分硬盘分区就比较容易的多；也能为以后减少不必要的麻烦；
+
+三、fdisk -l 查看硬盘及分区信息
+通过fdisk -l 查看机器所挂硬盘个数及分区情况。
+
+四、fdisk 对硬盘及分区的操作，进入fdisk 对硬盘操作阶段；
+我们可以对硬盘进行分区操作，前提是把fdisk -l 弄明白了；通过fdisk -l ，我们能找出机器中所有硬盘个数及设备名称；
+比如有两个设备一个是/dev/hda，另一个是/dev/sda；
+fdisk 操作硬盘的命令格式如下：
+fdisk 设备
+比如我们通过 fdisk -l 得知/dev/hda或者/dev/sda设备；我们如果想再添加或者删除一些分区，可以用fdisk /dev/hda。
+1、fdisk 的说明；
+当我们通过 fdisk 设备，进入相应设备的操作时，会发现有如下的提示；以 fdisk /dev/sda 设备为例，以下同；
+[root@localhost beinan]# fdisk /dev/sda
+Command (m for help): 在这里按m ，就会输出帮助；
+Command action
+　a toggle a bootable flag
+　b edit bsd disklabel
+　c toggle the dos compatibility flag
+　d delete a partition 注：这是删除一个分区的动作；
+　l list known partition types 注：l是列出分区类型，以供我们设置相应分区的类型；
+　m print this menu 注：m 是列出帮助信息；
+　n add a new partition 注：添加一个分区；
+　o create a new empty DOS partition table
+　p print the partition table 注：p列出分区表；
+　q quit without saving changes 注：不保存退出；
+　s create a new empty Sun disklabel
+　t change a partition's system id 注：t 改变分区类型；
+　u change display/entry units
+　v verify the partition table
+　w write table to disk and exit 注：把分区表写入硬盘并退出；
+　x extra functionality (experts only) 注：扩展应用，专家功能；
+其实我们常用的只有注有中文的，其它的功能我们不常用；x扩展功能，也不是常用的；一般的情况下只要懂得 d l m p q t w 就行了；
+
+五、对分区进行格式化，以及加载；
+先提示一下；用 mkfs.bfs mkfs.ext2 mkfs.jfs mkfs.msdos mkfs.vfatmkfs.cramfs mkfs.ext3 mkfs.minix mkfs.reiserfs mkfs.xfs 等命令来格式化分区，比如我想格式化 sda6为ext3文件系统，则输入；
+[root@localhost beinan]# mkfs.ext3 /dev/sda6
+如果我想加载 sda6到目前系统来存取文件，应该有mount 命令，但首先您得建一个挂载目录；比如 /mnt/sda6 ；
+[root@localhost beinan]# mkdir /mnt/sda6
+[root@localhost beinan]# mount /dev/sda6 /mnt/sda6
+
+六、小结
+1、什么是分区？
+   分区是将一个硬盘驱动器分成若干个逻辑驱动器，分区是把硬盘连续的区块当做一个独立的磁硬使用。分区表是一个硬盘分区的索引,分区的信息都会写进分区表。
+2、为什么要有多个分区？
+   防止数据丢失：如果系统只有一个分区，那么这个分区损坏，用户将会丢失所的有数据。
+增加磁盘空间使用效率：可以用不同的区块大小来格式化分区，如果有很多1K的文件，而硬盘分区区块大小为4K，那么每存储一个文件将会浪费3K空间。这时我们需要取这些文件大小的平均值进行区块大小的划分。
+数据激增到极限不会引起系统挂起：将用户数据和系统数据分开，可以避免用户数据填满整个硬盘，引起的系挂起。

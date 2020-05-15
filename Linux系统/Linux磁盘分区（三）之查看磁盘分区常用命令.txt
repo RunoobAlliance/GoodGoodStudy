@@ -1,0 +1,21 @@
+Linux磁盘分区（三）之查看磁盘分区常用命令
+转自https://blog.csdn.net/x356982611/article/details/77893264
+
+1、df
+   df -T
+   总的来说df查看分区类型是最方便的了。df命令只会列出已挂载的文件系统信息，对于没有挂载的文件系统是查看不到的。
+2、fsck
+   fsck -N
+3、lsblk
+   lsblk -f
+4、partd
+   partd -l
+5、mount
+   mount
+6、fdisk
+   fdisk -l
+7、查看/etc/fstab挂载文件系统脚本
+   cat /etc/fstab
+8、file
+   file -s 
+   查看到的类型并不是特别准确，只是显示从文件的功能角度的类型
