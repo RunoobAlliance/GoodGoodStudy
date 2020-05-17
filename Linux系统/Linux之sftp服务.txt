@@ -1,0 +1,99 @@
+Linux之sftp服务
+
+一、sftp介绍
+转自：
+[1]Linux如何开启SFTP https://www.cnblogs.com/xuliangxing/p/7120205.html
+SFTP是Secure File Transfer Protocol的缩写，安全文件传送协议。可以为传输文件提供一种安全的加密方法。
+　　SFTP与FTP有着几乎一样的语法和功能。
+　　SFTP为SSH的一部分，是一种传输档案至Blogger伺服器的安全方式。其实在SSH软件包中，已经包含了一个叫作SFTP(Secure File Transfer Protocol的安全文件传输子系统，SFTP本身没
+有单独的守护进程，它必须使用SSHD守护进程（端口号默认是22）来完成相应的连接操作，所以从某种意义上来说，SFTP并不像一个服务器程序，而更像是一个客户端程序。
+　　SFTP同样是使用加密传输认证信息和传输的数据，所以，使用SFTP是非常安全的。但是，由于这种传输方式使用了加密/解密技术，所以传输效率比普通的FTP要低得多，如果对网络安全性要求更高时，
+可以使用SFTP代替FTP。
+
+二、开启关闭sftp
+开始SSH服务，就会自动开启SFTP。关闭SSH服务，也会关闭SFTP。
+1. /etc/init.d/sshd start  
+2. /etc/init.d/sshd stop
+
+三、sftp常用命令
+转自：
+[1]sftp常用命令介绍 https://blog.csdn.net/qq_24309787/article/details/80117269
+[2]SFTP服务的使用 https://www.cnblogs.com/uestc-mm/p/6365947.html
+1.sftp user@ip
+   你要用sftp, 当然得登录到sftp服务器啊，在linux的shell中执行上面的命令后，linux shell会提示用户输入密码，我们就输入password吧。这样就成功建立了sftp连接。
+2. help
+   建立连接后，linux shell中的$编程了sftp>, 这也对。现在执行以下help, 可以看看sftp支持哪些命令。
+3. pwd和lpwd
+   pwd是看远端服务器的目录，即sftp服务器默认的当前目录。lpwd是看linux本地目录。
+4. ls和lls
+   ls是看sftp服务器下当前目录下的东东， lls是看linux当前目录下的东东。
+5. put a.txt
+   这个是把linux当前目录下的a.txt文件上传到sftp服务器的当前目录下。
+   put /home/fuyatao/downloads/Linuxgl.pdf /var/www/fuyatao/
+   这条语句将把本地/home/fuyatao/downloads/目录下的linuxgl.pdf文件上传至远程主机/var/www/fuyatao/ 目录下。
+6. get b.txt
+   这个是把sftp服务器当前目录下的b.txt文件下载到linux当前目录下。  
+   get /var/www/fuyatao/index.php  /home/fuyatao/
+   这条语句将从远程主机的/var/www/fuyatao/目录下将index.php下载到本地/home/fuyatao/目录下。
+7. !command
+   这个是指在linux上执行command这个命令， 比如!ls是列举linux当前目录下的东东， !rm a.txt是删除linux当前目录下的a.txt文件。
+   这个命令非常非常有用， 因为在sftp> 后输入命令， 默认值针对sftp服务器的， 所以执行rm a.txt删除的是sftp服务器上的a.txt文件， 而非本地的linux上的a.txt文件。
+8. exit和quit
+   退出。
+总之，连接后，有一个help命令，足矣足矣。
+
+四、sftp服务配置
+转自：
+[1]Linux下sftp服务配置 https://www.cnblogs.com/huangyanqi/p/11304257.html
+[2]linux如何搭建sftp服务器 https://www.cnblogs.com/reachos/p/11157329.html
+sftp服务配置步骤：
+（1）创建sftp用户组
+     groupadd sftp
+（2）创建ftp用户
+     useradd -g sftp -s /sbin/nologin -M Tom
+     passwd Tom
+（3）创建Tom家目录并指定
+     注释：给家目录更改属主并授权家目录属主必须是root，权限可以是755或者750
+	 mkdir /opt/data -p
+     usermod -d /opt/data Tom
+     chown root:root /opt/data
+     chmod 755 /opt/data
+（4）创建可写目录
+     mkdir /opt/data/file -p
+     chown Tom:sftp /opt/data/file
+	 
+（5）编辑配置文件/etc/ssh/sshd_config
+     注释掉X11Forwarding yes 这句话，大概在101行
+     注释掉Subsystem sftp /usr/libexec/openssh/sftp-server 这句话，大概在132行
+
+     并在文件末尾添加如下语句：
+     Subsystem sftp internal-sftp
+     Match User Tom
+     ChrootDirectory /opt/data
+     ForceCommand    internal-sftp
+     AllowTcpForwarding no
+     X11Forwarding no
+
+     systemctl restart sshd
+（6）验证
+     systemctl restart sshd
+	 sftp Tom@127.0.0.1
+
+五、附加
+1、安装、卸载ftp服务
+[1]Linux中安装，卸载ftp|sftp服务 http://www.jh-floor.com/fuwuqijiaocheng/Linux/489.html
+sftp采用的是ssh加密隧道，安装性方面较ftp强，而且依赖的是系统自带的ssh服务，不像ftp还需要额外的进行安装
+安装、卸载ftp服务：
+  安装vsftpd软件 
+     rpm -qa |grep vsftpd    #检测是否安装了vsftpd软件
+	 yum install vsftpd -y   #安装ftp服务
+  启动关闭服务：
+     service vsftpd start    #启动ftp服务
+	 service vsftpd stop     #关闭ftp服务
+	 service vsftpd restart  #重启ftp服务
+  卸载ftp服务
+     rpm -qa |grep vsftp     #查看vsftpd软件版本
+     service vsftpd stop     #先关闭ftp服务
+	 rpm -e 版本名称         #卸载vsftpd软件
+2、java实现SFTP多文件上传,删除
+[1]SFTP多文件上传,删除 https://www.cnblogs.com/future-eye/p/8194544.html
