@@ -1,0 +1,109 @@
+SSH服务及通过SSH方式登录linux
+
+1、检查SSH服务
+转自：
+[1]Linux之sshd服务https://www.cnblogs.com/uthnb/p/9367875.html
+[2]Linux系统管理命令-systemctl和sshd服务https://www.cnblogs.com/linuxandy/p/11205730.html
+[3]Linux之sshd服务https://www.cnblogs.com/uthnb/p/9367875.html
+[4]开启、关闭、查看SSH服务https://blog.csdn.net/baidu_34884208/article/details/89376795
+[5]SSHD服务安装、配置、使用https://blog.csdn.net/csl_compy/article/details/54965320
+[6]sshd服务安装https://www.cnblogs.com/cslzzl/p/6441111.html
+检查是否安装了SSH服务：
+       ssh localhost
+	   出现如下提示，说明未安装SSH：
+	   ssh: connect to host localhost port 22: Connection refused
+安装SSH服务：
+       yum install openssh-server
+卸载SSH服务:
+       yum remove ssh
+查看ssh服务的状态：
+	   systemctl status sshd 或 
+	   /etc/init.d/sshd status 或 
+	   service sshd status
+启动服务：
+	   systemctl start sshd 或
+	   /etc/init.d/ssh start 或 
+	   service sshd start
+关闭服务：
+	   systemctl stop sshd 或
+	   /etc/init.d/ssh stop  或 
+	   service sshd stop
+重启服务：
+	   systemctl restart sshd 或
+	   /etc/init.d/ssh restart 或 
+	   service sshd restart
+开机自启：
+	  systemctl enable sshd
+开机不自启：
+	  systemctl disable sshd
+开机启动的方法：https://www.cnblogs.com/fankoko/p/4500764.html
+     将启动命令添加到/etc/rc.local文件中或者/etc/rc.d/rc.local文件中。
+	 vi /etc/rc.local
+     添加内容如下：
+     service sshd start
+     或者：
+     /etc/init.d/sshd start	
+修改SSH端口号（默认是22）：https://www.cnblogs.com/hdk1993/p/6145272.html
+    在/etc/ssh/sshd_config中，搜索找到port字段，去掉#号，修改端口号。
+2、SSH方式登录linux
+转自：
+[1]SSH远程登录另一台linux https://www.jianshu.com/p/b86780f81e68
+[2]Linux 使用ssh命令远程连接另一台Linux https://www.cnblogs.com/linnuo/p/10688062.html
+[3]通过ssh远程登录另一台电脑,无须每次都输入密码的办法,通过copy-id https://www.cnblogs.com/kaerxifa/p/12095875.html
+语法：ssh [-l username] [-p port] hostname(或ip)
+      ssh [-p port] username@hostname(或ip)
+注：（1）默认用户名与正在本地系统上使用的用户名完全相同
+    （2）port默认是22
+	（3）执行完ssh命令之后，需输入指定用户的密码才能登录
+例：
+不指定用户名登录：
+   ssh 10.10.10.10
+指定用户名登录：
+   ssh -l root 10.10.10.10
+   ssh root@10.10.10.10
+如果端口不是22，则使用-p指定
+   ssh -l root -p 23 10.10.10.10
+   ssh -p 23 root@10.10.10.10
+3、SSH登录linux并执行shell命令
+转自：
+[1]Linux Shell远程执行命令（命令行与脚本方式）https://www.cnblogs.com/softidea/p/6855045.html
+
+语法：ssh [-l username] [-p port] hostname(或ip) command
+      ssh [-p port] username@hostname(或ip) command
+（1）命令行执行登录并且在目标服务器上执行命令
+ 例：ssh user@remoteNode "cd /home ; ls"
+ 注：如果想在远程机器上连续执行多条命令，可以用单引号或者双引号将这些命令括起来。如果不加单引号或者双引号，第二个ls命令在本地执行。
+ 例如 ssh user@node cd /local ls 则 ls 只会执行 cd /local 命令，ls命令在本地执行，加了双引号或者单引号，则被括起来的命令被当做ssh命令的一个参数，所以会在远程连续执行。
+ 多个命令之间用分号隔开。
+（2）在目标服务器上执行批量的命令
+#!/bin/bash  
+ssh root@192.168.0.23   << remotessh  
+killall -9 java  
+cd /data/apache-tomcat-7.0.53/webapps/  
+exit  
+remotessh
+远程执行的内容在"<< remotessh " 至" remotessh "之间，在远程机器上的操作就位于其中，注意的点：<< remotessh，ssh后直到遇到remotessh这样的内容结束，remotessh可以随便修改成其他形式。
+在结束前，加exit退出远程节点。如果不想日志文件在本机出现可以修改配置
+ssh root@192.168.0.23 > /dev/null 2>&1   << remotessh
+4、SSH登录linux远程拷贝文件
+转自：
+[1]怎么实现SSH实现linux之间的免密码登陆拷贝文件 https://www.cnblogs.com/pychina/p/11330454.html
+[2]利用scp远程上传下载文件/文件夹 https://www.cnblogs.com/zhaofeng555/p/8075279.html
+[3]Linux命令scp--远程拷贝文件 https://www.cnblogs.com/autumnvivi/articles/3447964.html
+拷贝远程服务器的文件到本地：
+    scp -r -P  端口号 用户名@IP地址:/usr/local/tomcat_airc/webapps/  /tmp/kyj/
+拷贝本地文件到远程服务器：
+    scp -r /tmp/kyj/sys.war  用户名@IP地址:/usr/local/tomcat_airc/webapps/
+5、环境变量
+转自：
+[1]解决SSH远程执行命令找不到环境变量的问题 https://www.cnblogs.com/zhenyuyaodidiao/p/9287497.html
+通过SSH执行远程主机的命令或脚本时，经常会出现找不到自定义环境变量的问题。但是，如果通过SSH登录远程主机，然后再执行相同的命令或脚本，那么此时执行又是成功的。
+两种相似的方法，得到的结果却截然不同，看起来很诡异的现象，根本原因在于这两种方式使用的bash模式不同！
+解决办法：要解决SSH远程执行命令时找不到自定义环境变量的问题，那么可以在登录用户的HOME目录的.bashrc中添加需要的环境变量。
+6、问题总结
+（1）非root的linux用户SSH远程登录另一台机器提示Permission denied, please try again.的原因及解决办法
+https://blog.csdn.net/lihuifen2011/article/details/105371482/
+
+
+
+   

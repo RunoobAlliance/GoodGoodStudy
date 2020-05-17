@@ -1,0 +1,85 @@
+Linux磁盘分区（四）之分区大小调整
+在学习调整分区大小之前，先了解linx分区的概念。参考如下博客：
+[1]linux 分区 物理卷 逻辑卷 https://www.cnblogs.com/liuchaogege/p/5688351.html
+
+一、Linux逻辑卷分区大小调整
+转自：
+[1]Linux逻辑卷分区大小调整 https://blog.csdn.net/yedongfeng_1314/article/details/82555597
+[2]linux调整文件系统大小 https://www.cnblogs.com/liuyanfeiyuer/p/11234675.html
+了解linux文件系统，linux文件系统分为ext2/3/4和xfs，针对不同的文件系统，linux进行分区调整有不同的命令；
+（1）ext2/ext3/ext4调整分区大小的命令：
+     lvextend -L +100G /dev/mapper/centos-root           //根分区增加100G
+     lvextend -L 150G /dev/mapper/centos-root            //根分区增加至150G
+     lvreduce -L -100G /dev/mapper/centos-home           //home分区增加100G
+     lvreduce -L 150G /dev/mapper/centos-home            //home分区增加至150G
+     resize2fs /dev/mapper/centos-home                   //执行调整
+（2）xfs文件系统调整命令：
+     lvextend -L +100G /dev/mapper/centos-root           //根分区增加100G
+     lvextend -L 150G /dev/mapper/centos-root            //根分区增加至150G
+     xfs_growfs /dev/mapper/centos-root                  //执行调整
+注意：xfs只有增加分区，不支持减小分区。如果硬要减小，只能在减小后，通过mkfs.xfs命令格式化才能重新挂载上,这样的话这个逻辑分区上原来的数据就丢失了。
+Linux逻辑卷分区大小调整步骤：以xfs为例
+	1、查看文件系统类型： df -hT
+	2、卸载目录： umount /home/
+	3、减少目录大小 ：lvreduce -L -100G /dev/mapper/centos-home （若是增加，则是lvextend -L +100G /dev/mapper/centos-home）
+	4、执行：xfs_growfs /dev/mapper/centos-home （若是增加，执行此步骤就结束了）
+	5、挂载：mount /dev/mapper/centos-home /home/ 会失败
+	6、格式化：mkfs.xfs /dev/mapper/centos-home -f
+	7、再次挂载：mount /dev/mapper/centos-home /home/
+	8、查看：df -hT
+	
+二、Linux物理分区大小调整
+转自：
+[1]扩大缩小Linux物理分区大小 https://www.cnblogs.com/MysticBoy/p/3460207.html
+物理分区其实则很简单，分两步：
+第一步检测分区
+  e2fsck -f /dev/sda1
+第二步将分区设置为245GB，扩大无所谓，缩小要看你空间占用，如果文件占用超过你设置的话，会有问题
+  resize2fs /dev/sda1 245G
+
+三、Linux目录大小调整
+[1]linux扩展某个目录下空间 https://blog.csdn.net/qq_27009517/article/details/82217723
+[2]Linux下调整/tmp目录大小 https://blog.csdn.net/wisgood/article/details/77500729
+[3]Linux根目录增加空间 https://www.cnblogs.com/killall007/p/9683043.html
+[4]linux扩展根目录空间https://www.cnblogs.com/dongruiha/p/6817384.html
+扩展目录空间的步骤：
+     1.将未分配的磁盘空间划分为新分区，如/dev/hda3
+	 2.将新分区制作为物理卷，即PV，如pvcreate /dev/hda3
+	 3.将新分区加入到逻辑卷组当中，如vgextend VolGroup00 /dev/hda3
+	 4.扩展逻辑卷，如lvextend -L +9.8G /dev/VolGroup00/LogVol00
+	 5.查看， lvdisplay
+	 5.执行扩展，如resize2fs /dev/VolGroup00/LogVol00
+	 6.查看扩展结果，如df -lh，发现逻辑卷/dev/VolGroup00/LogVol00对应的目录扩大了9.8G
+
+四、Linux swap分区大小调整
+[1]linux下创建swap分区 https://www.cnblogs.com/HByang/p/9131880.html
+[2]Linux扩展swap分区 https://www.jianshu.com/p/b1e2955854c0
+[3]Linux调整SWAP分区 https://www.cnblogs.com/flay/p/5059266.html
+[4]Linux系统中swap分区的设置与增加/删除 https://www.jb51.net/article/142928.htm
+1、创建swap分区
+方法1：以分区的形式创建swap
+    fdisk /dev/sda
+       n (新建一个分区为/dev/sda6)
+       t (修改分区的id)
+       82 (swap的id为82)
+       w (重写分区表)
+    partprobe (同步内存和分区表信息)
+    mkswap /dev/sda6 (格式化成swap分区)
+    swapon /dev/sda6 (打开swap分区)
+    vim /etc/fstab (在fstab中增加一条记录如下)
+        /dev/hda6 swap swap defaults 0 0
+    mount -a
+方法2：以文件的形式创建swap
+    dd if=/dev/zero of=/opt/swapfile bs=1M count=1000 (bs blocksize ，每个块大小为1M.count=2048。则总大小为2G的文件。创建一个1G的文件作为交换分区使用)
+    mkswap /opt/swapfile (格式化成swap分区)
+    swapon /opt/swapfile (打开swap分区)
+    vim /etc/fstab (在fstab中增加一条记录如下)
+        /opt/swapfile swap swap defaults 0 0
+    mount -a
+2、调整swap分区大小
+扩展：https://www.jianshu.com/p/b1e2955854c0
+缩小：https://www.jb51.net/article/142928.htm
+3、关闭swap分区
+   swapoff /dev/sda6
+   swapoff /opt/swapfile
+
