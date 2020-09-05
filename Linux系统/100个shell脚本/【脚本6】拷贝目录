@@ -1,0 +1,26 @@
+【脚本6】拷贝目录
+编写shell脚本，把/root/目录下的所有目录（只需要一级）拷贝到/tmp/目录下：
+
+一、脚本
+#!/bin/bash
+
+cd /root
+list=(`ls`)
+for i in ${list[@]}
+do
+    if [-d $i]
+    then
+        cp -r $i /tmp/
+    fi
+done
+
+
+二、小结
+1、Linux目录
+[1]linux列出一个目录及其子目录下面的某种类型的文件 https://www.cnblogs.com/AloneSword/p/4488969.html
+[2]shell 脚本中数组的总结 http://www.178linux.com/41225
+[3]利用shell脚本遍历某个目录下的所有文件 https://blog.csdn.net/chenguolinblog/article/details/12655961
+[4]在shell中把ls的输出存进一个数组变量中 https://blog.csdn.net/baidu_35757025/article/details/64439508
+[5]一些常用的shell命令：cd、$、比较、ls： https://blog.csdn.net/sunjinxia/article/details/10496781
+2、Linux的判断语句：
+[1]Shell学习(六)——条件判断总结 https://www.cnblogs.com/shujk/p/13532801.html

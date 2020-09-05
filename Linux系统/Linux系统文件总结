@@ -1,0 +1,32 @@
+Linux文件总结
+
+一、/etc下的文件
+1、/etc/passwd
+[1]linux中/etc/passwd文件的用法 https://www.cnblogs.com/PandoraX/p/3978541.html
+作用：存储登陆用户信息
+格式：账号名称:密码:UID:GID:描述:家目录:shell
+举例：
+    root:x:0:0:root:/root:/bin/bash
+    bin:x:1:1:bin:/bin:/sbin/nologin
+2、/etc/shadow
+[1]linux /etc/shadow文件详解 https://www.cnblogs.com/linquan/p/5013625.html
+[2]linux根文件系统 /etc/shadow文件详解 https://www.cnblogs.com/tureno/articles/6634799.html
+作用：/etc/shadow文件中的记录行与/etc/passwd中的一一对应，它由pwconv命令根据/etc/passwd中的数据自动产生。
+格式：登录名:加密口令:最后一次修改时间:最小时间间隔:最大时间间隔:警告时间:不活动时间:失效时间:标志
+举例：
+     root:Dnakfw28zf38w:8764:0:168:7:::
+3、/etc/group
+[1]/etc/group文件详解 https://www.cnblogs.com/peida/archive/2012/12/05/2802419.html
+作用：存放用户组的所有信息
+格式：组名:口令:组标识号(GID):组内用户列表
+举例：
+     root:x:0:root,linuxsir
+     bin:x:1:root,bin,daemon
+     daemon:x:2:root,bin,daemon
+     sys:x:3:root,bin
+4、/etc/gshadow
+[1]详细解析Linux /etc/gshadow文件 https://blog.csdn.net/leroy008/article/details/16808003
+作用：etc/gshadow是/etc/group的加密资讯文件
+格式：用户组名:用户组密码:用户组管理员名称:组成员
+举例：
+     groupname:password:admin,admin,...:member,member,...

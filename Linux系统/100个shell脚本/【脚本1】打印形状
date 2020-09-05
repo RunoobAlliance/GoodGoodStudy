@@ -1,0 +1,89 @@
+【脚本1】打印形状
+打印等腰三角形、直角三角形、倒直角三角形、菱形
+
+#!/bin/bash
+
+#等腰三角形
+read -p "Please input the length:" n
+for i in `seq 1 $n`
+do
+  for ((j=$n;j>i;j--))
+  do
+      echo -n " "
+  done
+  for m in `seq 1 $i`
+  do
+      echo -n "*"
+  done
+  echo
+done
+
+#直角三角形
+read -p "Please input the length:" n
+for i in `seq 1 $n`
+do
+  for ((j=1;j<=$i;j++))
+  do
+     echo -n "*"
+  done
+  echo
+done
+
+#倒直角三角形
+read -p "Please input the length:" n
+for i in `seq 1 $n`
+do
+    for j in `seq $i $n`
+    do
+        echo -n "*"
+    done
+    echo
+done
+
+#菱形
+read -p "Please input the length:" n
+for i in `seq 1 $n`
+do
+   for ((j=$n;j>i;j--))
+   do
+      echo -n " "
+   done
+   echo
+   for m in `seq 1 $i`
+   do
+      echo -n "*"
+   done
+   echo
+done
+for i in `seq 1 $n`
+do
+    for ((j=1;j<=$i;j++))
+    do
+        echo -n " "
+    done
+    echo
+    for ((k=$i;k<=$n-1;k++))
+    do
+       echo -n "*"
+    done
+    echo
+done
+
+总结：
+一、for语句结构
+shell脚本之for循环：https://www.cnblogs.com/jing99/p/9256641.html
+for ... do ... done
+二、seq语法
+shell脚本之seq命令：https://www.cnblogs.com/liujiacai/p/7824842.html
+三、echo命令语法
+linux echo命令的-n、-e两个参数：https://www.cnblogs.com/xysr-tom/archive/2019/03/19/10557468.html
+四、read函数用法
+SHELL脚本--read命令：https://www.cnblogs.com/f-ck-need-u/p/7402149.html
+五、Linux命令："grep -v grep"的作用 & 使用场景
+https://www.cnblogs.com/bulh/articles/12165619.html
+六、shell脚本小集锦
+https://www.cnblogs.com/jing99/p/9250933.html
+
+shell中的单层大/中/小括号、双层大中小括号、命令替换等
+https://blog.csdn.net/qq_31073871/article/details/80822579
+Shell中的流程控制：

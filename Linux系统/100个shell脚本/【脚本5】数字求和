@@ -1,0 +1,30 @@
+【脚本5】数字求和
+编写shell脚本，要求输入一个数字，然后计算出从1到输入数字的和，要求，如果输入的数字小于1，则重新输入，直到输入正确的数字为止，示例：
+
+一、脚本
+#!/bin/bash
+while :
+do
+   read -p "Please enter a positive integer: " n
+   if [ $n -lt 1 ]
+   then
+      echo "It can't be less than 1"
+   else
+      break
+   fi
+done
+
+num=1
+for i in `seq 2 $n`
+do
+   num=$[$num+$i]
+done
+
+echo $num
+
+二、小结：
+1、for 循环
+[1]LInux shell之(for in 用法总结) https://blog.csdn.net/wzj_110/article/details/86669426
+[2]Shell脚本中使用变量作为for循环范围 https://www.jdoodle.com/test-bash-shell-script-online/
+2、Shell变量与算术运算
+[1]Shell变量与算术运算 https://www.cnblogs.com/yweihum/p/9497593.html

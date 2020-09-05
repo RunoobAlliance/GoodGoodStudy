@@ -1,0 +1,152 @@
+【脚本4】自定义rm命令
+linux系统的rm命令太危险，一不小心就会删除掉系统文件。 写一个shell脚本来替换系统的rm命令，要求当删除一个文件或者目录时，都要做一个备份，然后再删除。下面分两种情况，做练习：
+一、脚本
+1、简单的实现
+假设有一个大的分区/data/，每次删除文件或者目录之前，都要先在/data/下面创建一个隐藏目录，以日期/时间命名，比如/data/.201703271012/，然后把所有删除的文件同步到该目录下面，可以使用rsync -R 把文件路径一同同步，示例：
+
+#!/bin/bash
+filename=$1
+now=`date +%Y%m%d%H%M`
+
+read -p "Are you sure to delete the file or diectory ${filename} ? yes|no: " input 
+
+if [ "$input" == "yes" ] || [ "$input" == "y" ]
+then
+  if [ ! -d "/data/.${now}"]
+  then
+     mkdir /data/.${now}
+  fi
+  rsync -aR ${filename} /data/.${now}
+  /bin/rm -rf ${filename}
+elif [ "$input" == no ] || [ "$input" == "n" ]
+then
+  exit 0
+else
+  echo "Only input yes or no"
+  exit
+fi
+
+2、复杂的实现
+不知道哪个分区有剩余空间，在删除之前先计算要删除的文件或者目录大小，然后对比系统的磁盘空间，如果够则按照上面的规则创建隐藏目录，并备份，如果没有足够空间，要提醒用户没有足够的空间备份并提示是否放弃备份，如果用户输入yes，则直接删除文件或者目录，如果输入no，则提示未删除，然后退出脚本，示例：
+
+
+#!/bin/bash
+
+filename=$1
+now=`date +%Y%m%d%H%M`
+
+file_size=`du -sk ${filename}|awk '{print $1}'`
+disk_size=`LANG=en;df -k|awk '{print $4}'|sort -n|tail -n1`
+big_filesystem=`LANG=en; df -k|grep -vi filesystem |sort -n -k4 |tail -n1 |awk '{print $NF}'`
+
+if [ $file_size -lt $disk_size ]
+then
+   read -p "Are you sure to delete the file or directory ${filename} ? yes|no: " input
+   if [ ${input} == "yes" ] || [ ${input} == "y" ]
+   then
+      if [ ! -d "${big_filesystem}/.{now}" ]
+      then
+         mkdir -p ${big_filesystem}/.{now}
+      fi
+      rsync -aR ${filename} ${big_filesystem}/.${now}
+      /bin/rm -rf ${filename}
+   elif [ $input == "no" ] || [ $input == "n" ]
+   then
+      exit 0
+   else
+      echo "Only input yes or no"
+   fi
+else
+   echo "The disk size is not enough to backup the file: ${filename}."
+   read -p "Do you want to delete the file or directory ${filename} ? yes|no: " input
+   if [ $input == "yes" ] || [ $input == "y" ]
+   then
+     echo "It will delete $filename after 5 seconds whitout backup."
+     for i in `seq 1 5`;do echo ".";sleep 1;done
+     /bin/rm -rf ${filename}
+   elif [ $input == "no" ] || [ $input == "n" ]
+   then
+     echo "It will not delete ${filename}."
+     exit 0
+   else
+     echo "Only input yes or no"
+   fi
+fi
+
+
+二、小结
+1、rsync同步：
+[1]sersync+rsync实现服务器文件实时同步 https://www.cnblogs.com/panwenbin-logs/p/7742288.html
+[2]rsync学习笔记 https://www.cnblogs.com/ant-colonies/p/10954422.html
+[3]第2章 rsync(一)：基本命令和用法 https://www.cnblogs.com/f-ck-need-u/p/7220009.html
+[4]rsync实时同步 https://www.cnblogs.com/guarderming/p/10929081.html
+[5]rsync+inotify实现文件实时同步 https://www.cnblogs.com/it-davidchen/p/11320219.html
+[6]Rsync实时同步目录 https://www.jianshu.com/p/1597e5af3619
+[7]Rsync+inotify实现文件实时同步 https://www.cnblogs.com/yanjieli/articles/10722087.html
+[8]利用rsync如何同步单个文件 https://www.cnblogs.com/longzhongren/p/4201782.html
+2、du、df
+[1]Linux du命令 https://www.runoob.com/linux/linux-comm-du.html
+[2]linux系统命令<二>----du的使用方法 https://www.cnblogs.com/weishuo/p/7553903.html
+[3]Linux df命令 https://www.runoob.com/linux/linux-comm-df.html
+[4]Linux命令的df http://www.hechaku.com/LinuxCmd/df.html
+[5]Linux操作系统df相关问题解惑 https://www.cnblogs.com/jiawei2527/p/10720647.html
+[6]linux系统df和du命令的区别 https://www.cnblogs.com/jxhd1/p/6700272.html
+[7]Linux系统中du和df命令详解 http://blog.chinaunix.net/uid-29810729-id-4436884.html
+3、sort
+[1]Linux sort命令 https://www.runoob.com/linux/linux-comm-sort.html
+[2]linux sort命令详解 https://www.cnblogs.com/51linux/archive/2012/05/23/2515299.html
+4、tail
+[1]Linux tail命令 https://blog.csdn.net/qq_27870421/article/details/93848123
+[2]linux tail命令的使用方法详解 https://www.cnblogs.com/mfryf/p/3336804.html
+[3]tailf、tail -f、tail -F三者区别（转） https://www.cnblogs.com/jackzz/p/9358213.html
+4、sleep
+[1]Linux系统中sleep的使用方法 http://www.oh100.com/kaoshi/caozuoxitong/605808.html
+sleep 1    睡眠1秒
+sleep 1s   睡眠1秒
+sleep 1m   睡眠1分
+sleep 1h   睡眠1小时 
+sleep 1d   睡眠1天
+5、date
+[1]Linux date命令 https://www.runoob.com/linux/linux-comm-date.html
+[2]Linux系统时钟与硬件时钟 https://www.cnblogs.com/rightlzc/p/11477399.html
+[3]Linux 设置时区 https://www.cnblogs.com/xiaodone/p/11714857.html
+[3]linux时区和时间设置 https://www.cnblogs.com/jjmaokk/p/9957840.html
+[5]Linux系统时间同步方法小结 https://www.cnblogs.com/williamjie/p/10768657.html
+[6]Linux配置ntp时间服务器（全） https://www.cnblogs.com/quchunhui/p/7658853.html
+[7]Linux基础命令---ntpq查询时间服务器 https://www.cnblogs.com/wj78080458/p/10849459.html
+[8]Linux系统时间同步方法小结 https://www.cnblogs.com/ibnode/p/3573302.html
+
+Linux 时间同步 https://www.jianshu.com/p/3af70a0e72dd
+linux时间同步，ntpd、ntpdate https://blog.csdn.net/vic_qxz/article/details/80344855
+
+时间、时区、硬件时间、时钟同步 
+系统时间：查看和修改
+date精确到毫秒：date +%Y-%m-%d’ ‘%H-%M-%S.%N | cut -b 1-23
+设置年月日：date -s 月/日/年、date -s 年月日
+设置时分秒：date -s 时:分:秒
+设置年月日时分秒：date -s "年月日 时:分:秒"
+                date -s "年-月-日 时:分:秒"
+                date -s "时:分:秒 年-月-日"
+                date -s "月日年时分.秒"
+硬件时间：查看和修改
+查看硬件时间：hwclock、hwclock -r、hwclock --show
+设置硬件时间：hwclock --set --date="月/日/年 时:分:秒"
+硬件时间与系统时间同步：hwclock -w、hwclock --systohc
+                      hwclock -s、hwclock --hctosys
+时区：查看和修改
+查看时区：date -R
+修改时区：tzselect
+复制相应的时区文件，替换系统时区文件；或者创建链接文件：cp /usr/share/zoneinfo/$主时区/$次时区 /etc/localtime
+         例如：在设置中国时区使用亚洲/上海（+8）
+         cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+         或：ln -s /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
+时钟同步：查看和设置
+    ntpq -np
+    ntpdate 时间服务器ip或域名
+    ntpstat
+    ntptrace -n
+
+https://linux265.com/course/4945.html
+https://www.linuxcool.com/ntpdate
+
+127.0.0.1和localhost和本机IP三者的区别:https://blog.csdn.net/weixin_36185028/article/details/79855383

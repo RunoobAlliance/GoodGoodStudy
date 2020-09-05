@@ -1,0 +1,196 @@
+参考博客：
+[1]linux awk命令详解 https://blog.csdn.net/weixin_41477980/article/details/89511954
+[2]linux中awk 详解 https://www.cnblogs.com/sucretan2010/p/11573602.html
+
+一、awk简介
+   awk是一个非常好用的数据处理工具，相对于sed常常作用于一整个行的处理，awk则比较倾向于一行当中分成数个【字段】处理，因此，awk相当适合处理小型的数据数据处理。awk是一种报表生成器，就是对文件进行格式化处理的，这里的格式化不是文件系统的格式化，而是对文件内容进行各种“排版”，进而格式化显示；在linux中我们使用的是GNU awk简称gawk，并且gawk其实就是awk的链接文件，因此在系统上使用awk和gawk是一样的。
+
+二、awk语法
+语法格式：
+    awk [-F|-f|-v] ‘BEGIN{} //{command1; command2} END{}’ file[,file2,...,filen]
+选项：
+    [-F|-f|-v]   大参数，-F指定分隔符，-f调用脚本，-v定义变量 var=value
+    '  '         引用代码块
+    BEGIN        这里面放的是执行前的语句。初始化代码块，主要是引用全局变量，设置FS分隔符。
+    //           匹配代码块，可以是字符串或正则表达式
+    {}           这里面放的是处理每一行时要执行的语句。命令代码块，包含一条或多条命令，多条命令使用分号分隔      
+    END          这里面放的是处理完所有的行后要执行的语句。结尾代码块，主要是进行最终计算或输出结尾摘要信息
+举例：
+cat ceshi.txt |awk -v FS: '{print $1,$3}'(每行按冒号分割，输出第一个域和第三个域；默认为空格分割；注意：awk后续动作都要以单引号引起来)
+cat ceshi.txt |awk -v FS: '{print $1"XXXX"$3}'("XXXX"代表任意内容，必须用双引号引起来)
+
+三、变量
+1、内建变量
+FS   输入字段分隔符，默认为空格
+RS   输入的记录分隔符，默认为换行符(即文本是按一行一行输入)
+OFS  输出字段分割符，默认为空格
+ORS  输出的记录分隔符，默认为换行符(即处理结果也是一行一行输出到屏幕)
+NF   当前行的字段的数量
+print NF 显示当前行的字段数
+print $NF 显示当前行的第NF字段的值
+$0    表示整个当前行
+$1    每行第一个字段       
+NR   每行的记录号，多文件记录递增
+FNR  每个文件分别计数，显示行号。与NR类似，不过多文件记录不递增，每个文件都从1开始
+FILENAME 当前文件名
+ARGC 命令行参数的个数
+ARGV 保存命令行所给定的各参数的数组
+
+\t      制表符
+\n      换行符
+~       匹配，与==相比不是精确比较
+!~      不匹配，不精确比较
+==      等于，必须全部相等，精确比较
+!=      不等于，精确比较
+&&　    逻辑与
+||      逻辑或
++       匹配时表示1个或1个以上
+/[0-9][0-9]+/   两个或两个以上数字
+/[0-9][0-9]*/    一个或一个以上数字
+
+2、自定义变量
+（1）-v VALUE （变量名称区分大小写）在这里文件ceshi.txt中有多少行就显示多少行变量的值
+     awk -v fan="cool"  '{print fan}' ceshi.txt
+（2）在代码块中自定义变量
+     awk 'BEGIN{FS=":";abc=1}{print $abc}' ceshi.txt
+
+四、awk的输出
+1、print & $0
+print 是awk打印指定内容的主要命令
+举例：
+awk '{print}'  /etc/passwd   ==   awk '{print $0}'  /etc/passwd  
+awk '{print " "}' /etc/passwd     //不输出passwd的内容，而是输出相同个数的空行，进一步解释了awk是一行一行处理文本
+awk '{print "a"}'   /etc/passwd   //输出相同个数的a行，一行只有一个a字母
+awk -F":" '{print $1}'  /etc/passwd
+awk -F: '{print $1; print $2}'   /etc/passwd        //将每一行的前二个字段，分行输出，进一步理解一行一行处理文本
+awk -F: '{print $1,$3,$6}' OFS="\t" /etc/passwd    //输出字段1,3,6，以制表符作为分隔符
+2、格式化输出printf
+语法 printf FORNAT，item1，item2
+FORMAT必须提供;
+与print语句不同，printf不会自动换行，需要使用换行符\n
+FORMAT中需要分别为后面的每个item指定一个格式符，否则item无法显示；
+格式符介绍：
+%c 显示字符的ASCII码
+%d，%i 显示为十进制整数
+%e，%E 科学技术法显示数值
+%f 显示为浮点数
+%g，%G 以科学技术法或浮点数格式显示数值
+%s 显示为字符串
+%u 显示无符号整数
+%% 当需要显示%号时需要连续打两个百分号
+举例说明：
+cat ceshi.txt |awk -F: '{printf "%-10s%s\n",$1,$3}'
+
+五、awk的操作符
+算术操作符     如：A+B A-B A*B A/B
+字符操作符     字符串链接
+赋值操作符     如：-= += /= %=
+比较操作符     如：> >= < <= ==
+模式匹配操作符  ~ 是否能由右侧指定的模式所匹配  ！~是否不能由右侧指定的模式所匹配
+逻辑操作符     && 与运算 || 或运算
+条件表达式     selector？if-true-expression：if-ials-expreion  
+函数调用       调用函数来进行数据的处理
+
+举例:
+通过df命令查看当前系统磁盘占用率，查出占用率大于等于百分之20的磁盘名称以及磁盘占用率
+df|awk -v FS=% '$0 ~ "/dev/sd" {print $1}'|awk '$NF>=20 {printf "DevName:%-10s Used:%s%%\n",$1,$5}'
+awk -v FS=: '{$3>=5?usertype="Big User":usertype="Small User";printf "UserName:%-15s Type:%s\n",$1,usertype}' ceshi.txt
+
+六、awk的控制语句
+参考：https://www.cnblogs.com/pigdragon/p/6473850.html
+1、if语句
+语法：if（condition）{statements}[else {statement}]
+举例：awk -F: '{if($3>=5){printf "%-10s%s\n",$1,$3}}' ceshi.txt
+2、while语句
+语法：while（condition）{statements}
+举例：echo {1..10} |awk '{n=1;while(n<=NF){if($n%2==0){print $n,"oushuo"}else {print $n,"jishu"};n++}}'
+3、do-while语句
+语法：do {statements} while (condition)
+举例：echo {1..10} |awk '{n=1;do{if($n%2==0){print $n,"oushuo"}else {print $n,"jishu"};n++}while(n<=NF)}'
+4、for语句
+for循环有两种格式：
+格式1：for(变量 in 数组){语句}
+举例：awk 'BEGIN{ for(k in ENVIRON) {print k"="ENVIRON[k]; } }'
+格式2：for(变量;条件;表达式){语句}
+举例：awk 'BEGIN{ total=0; for(i=0;i<=100;i++) {total+=i; } print total; }'
+5、退出循环
+（1）break
+（2）continue
+（3）delete array
+（4）exit
+（5）next  提前结束对本行文本的处理，而提前进入下一行的处理操作
+举例：awk -F: '{if($3%2==0)next;print $1,$3}' ceshi.txt
+
+七、awk的性能测试
+实验：从1加到100等于多少？
+（1）time (awk 'BEGIN{ total=0;for(i=0;i<=10000;i++){total+=i;}print total;}') 
+50005000
+real    0m0.003s 
+user    0m0.003s 
+sys     0m0.000s 
+（2）time(total=0;for i in $(seq 10000);do total=$(($total+i));done;echo $total;) 
+50005000
+real    0m0.141s 
+user    0m0.125s 
+sys     0m0.008s
+
+实现相同功能，可以看到awk实现的性能是shell的50倍！
+
+八、awk数组
+数组是一个包含一系列元素的表
+格式如下：
+        abc[1]="libai"
+        abc[2]="lihei"
+abc为数组名，[1][2]为数组下标，可以认为是数组的第一个元素，第二个元素，"libai""lihei"是元素的内容
+
+举例说明：
+awk 'BEGIN{fan[0]="libai";fan[1]="lihei";print fan[0]}'
+awk 'BEGIN{fan[0]="libai";fan[1]="lihei";print fan[1]}'
+awk 'BEGIN{fan[0]="libai";fan[1]="lihei";for (i in fan)print i}'
+awk -F: '{{fan[NR]=$1;}{print NR,fan[NR]}}' ceshi.txt
+
+利用数组统计每个ip地址访问量（编辑一个文件，该文件存储ip地址）
+awk '{array[$1]++} END {for(key in array) print array[key],key}' a|sort -r
+关于array[$1]++ 
+（1）awk在读取第一行的时候，会读取这个数组，此时的数组是这样的，array["第一行的内容"]++
+（2）此时该数组的值还没有定义，但后面有运算符号++，所以awk会将数字0自动赋值给array["第一行的值"]做++运算，所以得到的值为1.
+（3）在读到与array["第一行的内容"]相同的时候继续++运算，也就意味着，运算了多少次，就是出现了多少次。
+
+九、awk函数
+1、内键函数
+（1）数值处理 rand（） 返回0至1之间的一个随机数
+awk 'BEGIN{print rand()}'
+通过使用rand函数生成随机数，返回的值一直不变，所以我们需要配合srand函数
+awk 'BEGIN{srand();print rand()}'
+生成的随机数产生了变化，但生成的随机数都是小于1的小数，如果我们想要生成整数随机数，我们可以利用int整数函数截取整数部分的值
+awk 'BEGIN{srand();print 100*rand()}'
+awk 'BEGIN{srand();print int(100*rand())}'
+（2）字符串函数
+length（[s]） 返回指定的字符串的长度
+举例说明
+awk '{print $0 length()}' abc.txt （每一行全部字符长度）
+awk '{for(i=1;i<=NF;i++){print $i,length($i)}}' abc.txt（指定字符长度）
+
+gsub（r,s[,t]）基于r所表示的模式来匹配字符串t中的内容，将其所有被匹配到的内容均替换为s所表示的字符串
+举例说明
+awk '{gsub("h","H",$1);print $0}' abc.txt
+awk '{gsub("h","H",$0);print $0}' abc.txt
+
+sub（r,s[,t]） 基于r所表示的模式来匹配字符串t中的内容，将其第一次被匹配到的内容替换为s所表示的字符串
+举例说明
+awk '{sub("h","H");print $0}' abc.txt（只替换指定范围第一次匹配到的符合条件的字符）
+
+split（s,a[,r]） 以r为分隔符去切割字符串s，并将切割后的结果保存至a表示的数组中
+举例说明
+awk -v aa="李大;李二;李三" 'BEGIN{split(aa,lishijiazu,";");for(i in lishijiazu){print lishijiazu[i]}}'
+awk -v aa="cc;ff;dd;ee" 'BEGIN{split(aa,lishijiazu,";");for(i in lishijiazu){print lishijiazu[i]}}'
+从上面我们发现数组元素输出顺序可能与字符串中字符的顺序不同，我们可以采用下面的办法
+awk -v aa="cc;ff;dd;ee" 'BEGIN{ abc=split(aa,lishijiazu,";");for(i=1;i<=abc;i++){print i,lishijiazu[i]}}'
+2、用户自定义函数
+函数是程序的基本组成部分，awk允许我们定义自己的函数，一个大的程序可以分为多个函数并且每个函数可以独立测试
+用户自定义函数的一般格式为：
+function function_name(argument1,argument2,...)
+   {
+        function body
+   }
+function_name是用户定义函数的名称，函数名称应以字符的字母并且其余部分可以是数字，字母或下划线的任意组合，awk的保留字不能用作函数名字；函数可以接受以逗号分隔的多个参数，参数不是强制性的，我们也可以创建一个用户定义的函数不带任何参数；函数体由一个或多个awk语句组成。

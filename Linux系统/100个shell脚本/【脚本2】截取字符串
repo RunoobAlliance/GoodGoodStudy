@@ -1,0 +1,76 @@
+【脚本2】截取字符串
+一、脚本
+现有一个字符串如下：
+http://www.aaa.com/root/123.htm
+
+请根据以下要求截取出字符串中的字符：
+1.取出www.aaa.com/root/123.htm
+2.取出123.htm
+3.取出http://www.aaa.com/root
+4.取出http:
+5.取出http://
+6.取出www.aaa.com/root/123.htm
+7.取出123
+8.取出123.htm
+
+# echo ${var#*//}
+# echo ${var##*/}
+# echo ${var%/*}
+# echo ${var%%/*}
+# echo ${var%%w*}
+# echo ${var#*//}
+# var1=${var##*/}
+# echo ${var1%.*}
+# echo $var1
+
+# echo $var | awk -F '//' '{print $2}'
+# echo $var | awk -F '/' '{print $5}'
+# echo $var | grep -o 'http.*root'
+# echo $var | awk -F '//' '{print $1}'
+# echo $var | grep -o 'http://'
+# echo $var | grep -o 'www.*htm'
+# echo $var | grep -o '123'
+# echo $var | grep -o '123.htm'
+
+二、小结
+1、grep的用法
+[1]Linux命令："grep -v grep"的作用 & 使用场景 https://www.cnblogs.com/bulh/articles/12165619.html
+[2]
+1.1grep语法
+grep [参数] 查询内容 文件(多个文件使用空格分隔)
+常用选项：
+　　-E ：开启扩展（Extend）的正则表达式。
+    -e ：开启扩展（Extend）的正则表达式。
+　　-i ：略大小写（ignore case）。
+　　-v ：反过来（invert），只打印没有匹配的，而匹配的反而不打印。
+　　-n ：显示行号
+　　-w ：被匹配的文本只能是单词，而不能是单词中的某一部分，如文本中有liker，而我搜寻的只是like，就可以使用-w选项来避免匹配liker
+　　-c ：显示总共有多少行被匹配到了，而不是显示被匹配到的内容，注意如果同时使用-cv选项是显示有多少行没有被匹配到。
+　　-o ：只显示被模式匹配到的字符串。
+　　--color :将匹配到的内容以颜色高亮显示。
+　　-A  n：显示匹配到的字符串所在的行及其后n行，after
+　　-B  n：显示匹配到的字符串所在的行及其前n行，before
+　　-C  n：显示匹配到的字符串所在的行及其前后各n行，context
+注：
+   （1）grep -e 与 grep -E的区别：
+       grep -e 只能传递一个检索内容   
+             grep -e pattern1 -e pattern2 filename
+       grep -E 可以传递多个内容 ，使用 | 来分割多个pattern，以此实现OR操作
+             grep -E 'pattern1|pattern2' filenam
+   （2） pattern正则表达式主要参数:
+         \： 忽略正则表达式中特殊字符的原有含义。
+         ^：匹配正则表达式的开始行。
+         $: 匹配正则表达式的结束行。
+        \<：从匹配正则表达式的行开始。
+        \>：到匹配正则表达式的行结束。
+        [ ]：单个字符，如[A]即A符合要求 。
+        [ - ]：范围，如[A-Z]，即A、B、C一直到Z都符合要求 。
+        .：所有的单个字符。
+        *：所有字符，长度可以为0。
+    
+2、awk的用法
+[1]linux awk命令详解
+https://blog.csdn.net/weixin_41477980/article/details/89511954
+
+3、Linux常见命令与Shell语法大全
+https://segmentfault.com/a/1190000022693895

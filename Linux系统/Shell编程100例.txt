@@ -1,0 +1,12 @@
+编写可靠shell脚本的八个建议
+   https://blog.csdn.net/bitcarmanlee/article/details/52661990
+shell编程100例
+   https://blog.csdn.net/yugemengjing/article/details/82469785
+推荐超详细的5个Shell脚本实例
+   https://www.linuxprobe.com/shell-share.html
+Shell脚本编程30分钟入门(小结)
+   https://www.jb51.net/article/161028.htm
+用Vim完成BashShell脚本编写（bash-support : Bash IDE）
+   https://blog.csdn.net/solaraceboy/article/details/78771190?utm_medium=distribute.pc_relevant_bbs_down.none-task-blog-BlogCommendFromBaidu-13.nonecase&depth_1-utm_source=distribute.pc_relevant_bbs_down.none-task-blog-BlogCommendFromBaidu-13.nonecase
+linux下使用vim替换文件中的^M换行符
+   https://www.cnblogs.com/lipijin/p/3837619.html

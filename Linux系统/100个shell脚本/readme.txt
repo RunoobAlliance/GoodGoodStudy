@@ -1,0 +1,1 @@
+干货分享-100个shell脚本：https://www.cnblogs.com/binghuaZhang/p/11139326.html
